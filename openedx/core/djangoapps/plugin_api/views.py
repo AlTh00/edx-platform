@@ -105,9 +105,9 @@ class EdxFragmentView(FragmentView):
 
     def standalone_page_title(self, request, fragment, **kwargs):
         """
-        Returns the page title for the standalone page.
+        Returns the page title for the standalone page, or None if there is no title.
         """
-        raise Exception('Page title not defined for {view}'.format(view=self))
+        return None
 
     def render_standalone_response(self, request, fragment, **kwargs):
         """

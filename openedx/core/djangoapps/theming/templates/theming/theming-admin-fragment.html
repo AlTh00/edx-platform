@@ -22,8 +22,8 @@ from django.utils.translation import ugettext as _
             </div>
         </fieldset>
         <div class="form-actions">
-            <button class="btn btn-primary" type="submit" name="set_preview_theme" value="set_language">${_("Submit")}</button>
-            <button class="btn btn-secondary" type="submit" name="reset_preview_theme" value="reset">${_("Reset")}</button>
+            <button class="btn btn-primary" type="submit" name="action" value="set_preview_theme">${_("Submit")}</button>
+            <button class="btn btn-secondary" type="submit" name="action" value="reset_preview_theme">${_("Reset")}</button>
         </div>
 
         <input type="hidden" name="csrfmiddlewaretoken" value="${ csrf_token }"/>

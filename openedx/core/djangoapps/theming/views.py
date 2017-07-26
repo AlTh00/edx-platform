@@ -2,7 +2,12 @@
 Views file for the Darklang Django App
 """
 
+from django.conf import settings
+from django.contrib.auth.decorators import login_required
+from django.http import Http404
+from django.shortcuts import redirect
 from django.template.loader import render_to_string
+from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext as _
 from openedx.core.djangoapps.plugin_api.views import EdxFragmentView
 from openedx.core.djangoapps.user_api.preferences.api import (
@@ -10,16 +15,30 @@ from openedx.core.djangoapps.user_api.preferences.api import (
     get_user_preference,
     set_user_preference,
 )
-from openedx.core.djangoapps.util.user_messages import (
-    register_error_message,
-    register_success_message,
-)
+from openedx.core.djangoapps.util.user_messages import PageLevelMessages
+from student.roles import GlobalStaff
 from web_fragments.fragment import Fragment
 
 from .helpers import theme_exists
 from .models import SiteTheme
 
 PREVIEW_SITE_THEME_PREFERENCE_KEY = 'preview-site-theme'
+PREVIEW_THEME_FIELD = 'preview_theme'
+
+
+def user_can_preview_themes(user):
+    """
+    Returns true if the specified user is allowed to preview themes.
+    """
+    if not user or user.is_anonymous():
+        return False
+
+    # In development mode, all users can preview themes
+    if settings.DEBUG:
+        return True
+
+    # Otherwise, only global staff can preview themes
+    return GlobalStaff().has_user(user)
 
 
 def get_user_preview_site_theme(request):
@@ -50,18 +69,18 @@ def set_user_preview_site_theme(request, preview_site_theme):
             preview_site_theme_name = preview_site_theme
         if theme_exists(preview_site_theme_name):
             set_user_preference(request.user, PREVIEW_SITE_THEME_PREFERENCE_KEY, preview_site_theme_name)
-            register_success_message(
+            PageLevelMessages.register_success_message(
                 request,
                 _('Site theme changed to {site_theme}'.format(site_theme=preview_site_theme_name))
             )
         else:
-            register_error_message(
+            PageLevelMessages.register_error_message(
                 request,
                 _('Theme {site_theme} does not exist'.format(site_theme=preview_site_theme_name))
             )
     else:
         delete_user_preference(request.user, PREVIEW_SITE_THEME_PREFERENCE_KEY)
-        register_success_message(request, _('Site theme reverted to the default'))
+        PageLevelMessages.register_success_message(request, _('Site theme reverted to the default'))
 
 
 class ThemingAdministrationFragmentView(EdxFragmentView):
@@ -73,21 +92,32 @@ class ThemingAdministrationFragmentView(EdxFragmentView):
         """
         Renders the theming administration view as a fragment.
         """
-        context = {
-            'preview_site_theme': get_user_preview_site_theme(request),
-        }
-        html = render_to_string('theming/theming-admin-fragment.html', context)
-        fragment = Fragment(html)
-        self.add_fragment_resource_urls(fragment)
-        return fragment
+        html = render_to_string('theming/theming-admin-fragment.html', {})
+        return Fragment(html)
 
-    def post(self, request, *args, **kwargs):
+    @method_decorator(login_required)
+    def get(self, request, *args, **kwargs):
         """
-        Accept a post request, and then render the fragment to HTML.
+        Renders the theming admin fragment to authorized users.
+        """
+        if not user_can_preview_themes(request.user):
+            raise Http404
+        return super(ThemingAdministrationFragmentView, self).get(request, *args, **kwargs)
 
-        Note: the middleware will handle updates to the preview theme.
+    @method_decorator(login_required)
+    def post(self, request, **kwargs):
         """
-        return self.get(request, *args, **kwargs)
+        Accept requests to update the theme preview.
+        """
+        if not user_can_preview_themes(request.user):
+            raise Http404
+        action = request.POST.get('action', None)
+        if action == 'set_preview_theme':
+            preview_theme_name = request.POST.get(PREVIEW_THEME_FIELD, '')
+            set_user_preview_site_theme(request, preview_theme_name)
+        elif action == 'reset_preview_theme':
+            set_user_preview_site_theme(request, None)
+        return redirect(request.path)
 
     def create_base_standalone_context(self, request, fragment, **kwargs):
         """

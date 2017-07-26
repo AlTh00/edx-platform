@@ -1,27 +1,11 @@
 ## mako
 
+<%page expression_filter="h"/>
+
 ## Override the default styles_version to use Bootstrap
 <%! main_css = "css/bootstrap/lms-main.css" %>
 
-<%page expression_filter="h"/>
 <%inherit file="/main.html" />
+<%block name="pagetitle">${page_title if page_title else ''}</%block>
 
-<%namespace name='static' file='/static_content.html'/>
-
-<%! from openedx.core.djangolib.markup import HTML %>
-
-<% header_file = None %>
-
-<%block name="pagetitle">${page_title}</%block>
-
-<%block name="head_extra">
-    ${HTML(fragment.head_html())}
-</%block>
-
-<%block name="footer_extra">
-    ${HTML(fragment.foot_html())}
-</%block>
-
-<div class="content-wrapper" id="container">
-    ${HTML(fragment.body_html())}
-</div>
+<%include file="/fragments/standalone-page-fragment.html" args="fragment=fragment"/>
