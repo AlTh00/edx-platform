@@ -74,15 +74,18 @@ class TestThemingViews(TestCase):
             THEMING_ADMIN_URL,
             {
                 'action': 'set_preview_theme',
-                'theme': TEST_THEME_NAME,
+                'preview_theme': TEST_THEME_NAME,
             }
         )
         self.assertRedirects(post_response, THEMING_ADMIN_URL)
 
-        # Next request a page and verify that the theme is returned
+        # Next request a page and verify that the correct theme has been chosen
         response = self.client.get(THEMING_ADMIN_URL)
         self.assertEquals(response.status_code, 200)
-        self.assertContains(response, 'Theming Administration')
+        self.assertContains(
+            response,
+            '<option value="{theme_name}" selected=selected>'.format(theme_name=TEST_THEME_NAME)
+        )
 
         # Request to reset the theme
         post_response = self.client.post(
@@ -93,7 +96,10 @@ class TestThemingViews(TestCase):
         )
         self.assertRedirects(post_response, THEMING_ADMIN_URL)
 
-        # Finally verify that no theme is returned
+        # Finally verify that the test theme is no longer selected
         response = self.client.get(THEMING_ADMIN_URL)
         self.assertEquals(response.status_code, 200)
-        self.assertContains(response, 'Theming Administration')
+        self.assertContains(
+            response,
+            '<option value="{theme_name}">'.format(theme_name=TEST_THEME_NAME)
+        )
