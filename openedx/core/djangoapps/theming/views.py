@@ -1,5 +1,5 @@
 """
-Views file for the Darklang Django App
+Views file for theming administration.
 """
 
 from django.conf import settings
@@ -60,7 +60,8 @@ def set_user_preview_site_theme(request, preview_site_theme):
 
     Args:
         request: the current request
-        preview_site_theme: the preview site theme (or None to remove it)
+        preview_site_theme (str or SiteTheme): the preview site theme or theme name.
+          None can be specified to remove the preview site theme.
     """
     if preview_site_theme:
         if isinstance(preview_site_theme, SiteTheme):

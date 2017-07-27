@@ -92,7 +92,12 @@ class EdxFragmentView(FragmentView):
 
     def _add_studio_context_variables(self, request, context):
         """
-        Add additional context variables needed by Studio
+        Add additional context variables needed by Studio.
+
+        Note: this method ensures that Studio receives the context
+        variables that are expected by some of its shared templates.
+        Ideally these templates shouldn't depend upon this data being
+        provided but should instead import the functionality it needs.
         """
         context.update({
             'request': request,
