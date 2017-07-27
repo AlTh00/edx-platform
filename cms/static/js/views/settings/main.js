@@ -79,6 +79,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
 
                    DateUtils.setupDatePicker('start_date', this);
                    DateUtils.setupDatePicker('end_date', this);
+                   DateUtils.setupDatePicker('certificate_available_date', this);
                    DateUtils.setupDatePicker('enrollment_start', this);
                    DateUtils.setupDatePicker('enrollment_end', this);
 
@@ -159,6 +160,7 @@ define(['js/views/validation', 'codemirror', 'underscore', 'jquery', 'jquery.ui'
                    'end_date': 'course-end',
                    'enrollment_start': 'enrollment-start',
                    'enrollment_end': 'enrollment-end',
+                   'certificate_available_date': 'certificate-available',
                    'overview': 'course-overview',
                    'title': 'course-title',
                    'subtitle': 'course-subtitle',
